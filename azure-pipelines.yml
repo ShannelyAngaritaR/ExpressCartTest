@@ -1,43 +1,57 @@
 trigger:
-- main  
+  branches:
+    include:
+      - main 
 
 pool:
-  vmImage: 'ubuntu-latest'  
+  vmImage: 'windows-latest'  
 
 jobs:
 - job: RunCartTests
-  displayName: 'Ejecutar pruebas del carrito'
-  pool:
-    vmImage: 'ubuntu-latest'
+  displayName: 'Ejecutar pruebas de CartTests'
   steps:
-  - script: |
-      # Ejecutar todas las pruebas del carrito
-      mvn test -Dtest=tests.CartTests  # Ajusta el nombre del paquete según sea necesario
-    displayName: 'Ejecutar pruebas del carrito'
+    - checkout: self 
+    - script: mvn clean test -Dtest=CartTests -Dbase.url=https://fd5a-190-67-141-159.ngrok-free.app
+      displayName: 'Ejecutar CartTests'
+      workingDirectory: '$(System.DefaultWorkingDirectory)' 
+
+    # Paso de post-procesamiento para almacenar los resultados de las pruebas
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'JUnit'  
+        testResultsFiles: '**/target/surefire-reports/*.xml'  
+        failOnEmptyTestResults: true  
+      displayName: 'Publicar resultados de pruebas CartTests'
+
+- job: RunCartTestsParallel
+  displayName: 'Ejecutar pruebas paralelas de CartTests'
+  steps:
+    - checkout: self  
+    - script: mvn clean test -Dtest=CartTestParalelas -Dbase.url=https://fd5a-190-67-141-159.ngrok-free.app
+      displayName: 'Ejecutar CartTestParalelas'
+      workingDirectory: '$(System.DefaultWorkingDirectory)' 
+
+    # Paso de post-procesamiento para almacenar los resultados de las pruebas
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'JUnit'  
+        testResultsFiles: '**/target/surefire-reports/*.xml'  
+        failOnEmptyTestResults: true  
+      displayName: 'Publicar resultados de pruebas CartTestParalelas'
 
 - job: SimulateError
   displayName: 'Simular error 500'
-  dependsOn: RunCartTests  # Este trabajo se ejecutará después de que se completen las pruebas del carrito
-  pool:
-    vmImage: 'ubuntu-latest'
+  dependsOn: RunCartTests
   steps:
-  - script: |
-      # Ejecutar la prueba que simula el error
-      mvn test -Dtest=tests.Error500CartTest  # Ajusta el nombre del paquete según sea necesario
-    displayName: 'Ejecutar prueba de error 500'
+    - checkout: self 
+    - script: mvn test -Dtest=Error500CartTest -Dbase.url=https://fd5a-190-67-141-159.ngrok-free.app
+      displayName: 'Ejecutar prueba de error 500'
+      workingDirectory: '$(System.DefaultWorkingDirectory)' 
 
-# Paso opcional para publicar resultados de pruebas
-- job: PublishResults
-  displayName: 'Publicar resultados de pruebas'
-  dependsOn: 
-    - RunCartTests
-    - SimulateError
-  pool:
-    vmImage: 'ubuntu-latest'
-  steps:
-  - task: PublishTestResults@2
-    inputs:
-      testResultsFormat: 'JUnit'  # Cambia a otro formato si es necesario
-      testResultsFiles: '**/target/surefire-reports/*.xml'  # Asegúrate de que la ruta es correcta
-      failOnEmptyTestResults: true
-    displayName: 'Publicar resultados de pruebas'
+    # Paso de post-procesamiento para almacenar los resultados de las pruebas de error
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'JUnit'  
+        testResultsFiles: '**/target/surefire-reports/*.xml'  
+        failOnEmptyTestResults: true  
+      displayName: 'Publicar resultados de prueba de error 500'
