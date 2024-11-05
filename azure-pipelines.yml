@@ -1,0 +1,43 @@
+trigger:
+- main  
+
+pool:
+  vmImage: 'ubuntu-latest'  
+
+jobs:
+- job: RunCartTests
+  displayName: 'Ejecutar pruebas del carrito'
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - script: |
+      # Ejecutar todas las pruebas del carrito
+      mvn test -Dtest=tests.CartTests  # Ajusta el nombre del paquete según sea necesario
+    displayName: 'Ejecutar pruebas del carrito'
+
+- job: SimulateError
+  displayName: 'Simular error 500'
+  dependsOn: RunCartTests  # Este trabajo se ejecutará después de que se completen las pruebas del carrito
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - script: |
+      # Ejecutar la prueba que simula el error
+      mvn test -Dtest=tests.Error500CartTest  # Ajusta el nombre del paquete según sea necesario
+    displayName: 'Ejecutar prueba de error 500'
+
+# Paso opcional para publicar resultados de pruebas
+- job: PublishResults
+  displayName: 'Publicar resultados de pruebas'
+  dependsOn: 
+    - RunCartTests
+    - SimulateError
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'JUnit'  # Cambia a otro formato si es necesario
+      testResultsFiles: '**/target/surefire-reports/*.xml'  # Asegúrate de que la ruta es correcta
+      failOnEmptyTestResults: true
+    displayName: 'Publicar resultados de pruebas'

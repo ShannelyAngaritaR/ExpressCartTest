@@ -1,0 +1,3 @@
+tests\CartTests.class
+pages\CartPage.class
+utils\MongoDBSeeder.class
