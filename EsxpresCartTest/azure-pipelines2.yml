@@ -1,0 +1,41 @@
+trigger:
+  branches:
+    include:
+      - main 
+
+pool:
+  vmImage: 'windows-latest'  
+
+jobs:
+  - job: RunCartTests
+    displayName: 'Ejecutar pruebas de CartTests'
+    steps:
+      - checkout: self 
+      - script: mvn clean test -Dtest=CartTests 
+        displayName: 'Ejecutar CartTests'
+        workingDirectory: '$(System.DefaultWorkingDirectory)' 
+
+      # Publicar los resultados de las pruebas
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: 'JUnit'  
+          testResultsFiles: '**/target/surefire-reports/*.xml'  
+          failOnEmptyTestResults: true  
+        displayName: 'Publicar resultados de pruebas CartTests'
+
+  - job: RunError500CartTest
+    displayName: 'Ejecutar pruebas de Error500CartTest'
+    steps:
+      - checkout: self 
+      - script: mvn clean test -Dtest=CartTestParalelas 
+        displayName: 'Ejecutar Error500CartTest'
+        workingDirectory: '$(System.DefaultWorkingDirectory)' 
+
+      # Publicar los resultados de las pruebas de Error500CartTest
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: 'JUnit'  
+          testResultsFiles: '**/target/surefire-reports/*.xml'  
+          failOnEmptyTestResults: true  
+        displayName: 'Publicar resultados de pruebas Error500CartTest'
+

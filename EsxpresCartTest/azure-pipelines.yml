@@ -1,0 +1,26 @@
+trigger:
+  branches:
+    include:
+      - main 
+
+pool:
+  vmImage: 'windows-latest'  
+
+jobs:
+- job: RunCartTestsParallel
+  displayName: 'Ejecutar pruebas paralelas de CartTests'
+  steps:
+    - checkout: self  
+    - script: mvn clean test -Dtest=CartTestParalelas -Dbase.url=https://fd5a-190-67-141-159.ngrok-free.app
+      displayName: 'Ejecutar CartTestParalelas'
+      workingDirectory: '$(System.DefaultWorkingDirectory)' 
+
+    # Paso de post-procesamiento para almacenar los resultados de las pruebas
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'JUnit'  
+        testResultsFiles: '**/target/surefire-reports/*.xml'  
+        failOnEmptyTestResults: true  
+      displayName: 'Publicar resultados de pruebas CartTestParalelas'
+
+
