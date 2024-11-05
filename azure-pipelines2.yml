@@ -27,7 +27,7 @@ jobs:
     displayName: 'Ejecutar pruebas de Error500CartTest'
     steps:
       - checkout: self 
-      - script: mvn clean test -Dtest=CartTestParalelas 
+      - script: mvn clean test -Dtest=Error500CartTest 
         displayName: 'Ejecutar Error500CartTest'
         workingDirectory: '$(System.DefaultWorkingDirectory)' 
 

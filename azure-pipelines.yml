@@ -11,7 +11,7 @@ jobs:
   displayName: 'Ejecutar pruebas paralelas de CartTests'
   steps:
     - checkout: self  
-    - script: mvn clean test -Dtest=CartTestParalelas -Dbase.url=https://fd5a-190-67-141-159.ngrok-free.app
+    - script: mvn clean test -Dtest=CartTestParalelas 
       displayName: 'Ejecutar CartTestParalelas'
       workingDirectory: '$(System.DefaultWorkingDirectory)' 
 
